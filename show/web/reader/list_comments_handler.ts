@@ -1,0 +1,76 @@
+import { SERVICE_CLIENT } from "../../../common/service_client";
+import { SPANNER_DATABASE } from "../../../common/spanner_database";
+import { listCommentsInEpisode } from "../../../db/sql";
+import { Database } from "@google-cloud/spanner";
+import { Comment } from "@phading/comment_service_interface/show/web/comment";
+import { ListCommentsHandlerInterface } from "@phading/comment_service_interface/show/web/reader/handler";
+import {
+  ListCommentsRequestBody,
+  ListCommentsResponse,
+} from "@phading/comment_service_interface/show/web/reader/interface";
+import { newExchangeSessionAndCheckCapabilityRequest } from "@phading/user_session_service_interface/node/client";
+import { newBadRequestError, newUnauthorizedError } from "@selfage/http_error";
+import { NodeServiceClient } from "@selfage/node_service_client";
+
+export class ListCommentsHandler extends ListCommentsHandlerInterface {
+  public static create(): ListCommentsHandler {
+    return new ListCommentsHandler(SPANNER_DATABASE, SERVICE_CLIENT);
+  }
+
+  public constructor(
+    private database: Database,
+    private serviceClient: NodeServiceClient,
+  ) {
+    super();
+  }
+
+  public async handle(
+    loggingPrefix: string,
+    body: ListCommentsRequestBody,
+    authStr: string,
+  ): Promise<ListCommentsResponse> {
+    if (!body.seasonId) {
+      throw newBadRequestError(`"seasonId" is required.`);
+    }
+    if (!body.episodeId) {
+      throw newBadRequestError(`"episodeId" is required.`);
+    }
+    if (!body.limit) {
+      throw newBadRequestError(`"limit" is required.`);
+    }
+    let { accountId, capabilities } = await this.serviceClient.send(
+      newExchangeSessionAndCheckCapabilityRequest({
+        signedSession: authStr,
+        capabilitiesMask: {
+          checkCanConsumeShows: true,
+        },
+      }),
+    );
+    if (!capabilities.canConsumeShows) {
+      throw newUnauthorizedError(
+        `Account ${accountId} is not allowed to list comments.`,
+      );
+    }
+    let rows = await listCommentsInEpisode(
+      this.database,
+      body.seasonId,
+      body.episodeId,
+      body.pinTimeCursor ?? 0,
+      body.limit,
+    );
+    return {
+      comments: rows.map(
+        (row): Comment => ({
+          commentId: row.commentData.commentId,
+          authorId: row.commentData.authorId,
+          content: row.commentData.content,
+          pinTimeMs: row.commentData.pinTimeMs,
+        }),
+      ),
+      pinTimeCursor:
+        rows.length === body.limit
+          ? rows[rows.length - 1].commentData.pinTimeMs
+          : undefined,
+    };
+  }
+}

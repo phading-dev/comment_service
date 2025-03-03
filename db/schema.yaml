@@ -1,0 +1,88 @@
+- kind: Message
+  name: Comment
+  fields:
+    - name: commentId
+      type: string
+      index: 1
+    - name: seasonId
+      type: string
+      index: 2
+    - name: episodeId
+      type: string
+      index: 3
+    - name: authorId
+      type: string
+      index: 4
+    - name: content
+      type: string
+      index: 5
+    - name: pinTimeMs # Timestamp of the video
+      type: number
+      index: 6
+    - name: postedTimeMs
+      type: number
+      index: 7
+- kind: SpannerDatabase
+  name: CommentDatabase
+  tables:
+    - kind: MessageTable
+      name: Comment
+      storedInColumn: data
+      columns:
+        - commentId
+        - seasonId
+        - episodeId
+        - authorId
+        - pinTimeMs
+        - postedTimeMs
+      primaryKeys:
+        - commentId
+      indexes:
+        - name: CommentsInEpisode
+          columns:
+            - seasonId
+            - episodeId
+            - pinTimeMs
+        - name: CommentsByPostedTime
+          columns:
+            - authorId
+            - name: postedTimeMs
+              desc: true
+      insert: InsertComment
+      delete: DeleteComment
+      get: GetComment
+      update: UpdateComment
+  selects:
+    - name: ListCommentsInEpisode
+      table: Comment
+      where:
+        op: AND
+        exps:
+          - op: =
+            leftColumn: seasonId
+          - op: =
+            leftColumn: episodeId
+          - op: ">"
+            leftColumn: pinTimeMs
+      orderBy:
+        - pinTimeMs
+      withLimit: true
+      getColumns:
+        - data
+    - name: ListCommentsByPostedTime
+      table: Comment
+      where:
+        op: AND
+        exps:
+          - op: =
+            leftColumn: authorId
+          - op: <
+            leftColumn: postedTimeMs
+      orderBy:
+        - column: postedTimeMs
+          desc: true
+      withLimit: true
+      getColumns:
+        - data
+  outputDdl: ./db/ddl
+  outputSql: ./db/sql
