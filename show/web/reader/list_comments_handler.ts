@@ -8,7 +8,7 @@ import {
   ListCommentsRequestBody,
   ListCommentsResponse,
 } from "@phading/comment_service_interface/show/web/reader/interface";
-import { newExchangeSessionAndCheckCapabilityRequest } from "@phading/user_session_service_interface/node/client";
+import { newFetchSessionAndCheckCapabilityRequest } from "@phading/user_session_service_interface/node/client";
 import { newBadRequestError, newUnauthorizedError } from "@selfage/http_error";
 import { NodeServiceClient } from "@selfage/node_service_client";
 
@@ -39,37 +39,36 @@ export class ListCommentsHandler extends ListCommentsHandlerInterface {
       throw newBadRequestError(`"limit" is required.`);
     }
     let { accountId, capabilities } = await this.serviceClient.send(
-      newExchangeSessionAndCheckCapabilityRequest({
+      newFetchSessionAndCheckCapabilityRequest({
         signedSession: authStr,
         capabilitiesMask: {
-          checkCanConsumeShows: true,
+          checkCanConsume: true,
         },
       }),
     );
-    if (!capabilities.canConsumeShows) {
+    if (!capabilities.canConsume) {
       throw newUnauthorizedError(
         `Account ${accountId} is not allowed to list comments.`,
       );
     }
-    let rows = await listCommentsInEpisode(
-      this.database,
-      body.seasonId,
-      body.episodeId,
-      body.pinTimeCursor ?? 0,
-      body.limit,
-    );
+    let rows = await listCommentsInEpisode(this.database, {
+      commentSeasonIdEq: body.seasonId,
+      commentEpisodeIdEq: body.episodeId,
+      commentPinTimeMsGt: body.pinTimeCursor ?? 0,
+      limit: body.limit,
+    });
     return {
       comments: rows.map(
         (row): Comment => ({
-          commentId: row.commentData.commentId,
-          authorId: row.commentData.authorId,
-          content: row.commentData.content,
-          pinTimeMs: row.commentData.pinTimeMs,
+          commentId: row.commentCommentId,
+          authorId: row.commentAuthorId,
+          content: row.commentContent,
+          pinTimeMs: row.commentPinTimeMs,
         }),
       ),
       pinTimeCursor:
         rows.length === body.limit
-          ? rows[rows.length - 1].commentData.pinTimeMs
+          ? rows[rows.length - 1].commentPinTimeMs
           : undefined,
     };
   }

@@ -7,7 +7,7 @@ import {
   DeleteCommentRequestBody,
   DeleteCommentResponse,
 } from "@phading/comment_service_interface/show/web/author/interface";
-import { newExchangeSessionAndCheckCapabilityRequest } from "@phading/user_session_service_interface/node/client";
+import { newFetchSessionAndCheckCapabilityRequest } from "@phading/user_session_service_interface/node/client";
 import {
   newBadRequestError,
   newNotFoundError,
@@ -36,30 +36,34 @@ export class DeleteCommentHandler extends DeleteCommentHandlerInterface {
       throw newBadRequestError(`"commentId" is required.`);
     }
     let { accountId, capabilities } = await this.serviceClient.send(
-      newExchangeSessionAndCheckCapabilityRequest({
+      newFetchSessionAndCheckCapabilityRequest({
         signedSession: authStr,
         capabilitiesMask: {
-          checkCanConsumeShows: true,
+          checkCanConsume: true,
         },
       }),
     );
-    if (!capabilities.canConsumeShows) {
+    if (!capabilities.canConsume) {
       throw newUnauthorizedError(
         `Account ${accountId} is not allowed to delete comment.`,
       );
     }
     await this.database.runTransactionAsync(async (transaction) => {
-      let rows = await getComment(transaction, body.commentId);
+      let rows = await getComment(transaction, {
+        commentCommentIdEq: body.commentId,
+      });
       if (rows.length === 0) {
         throw newNotFoundError(`Comment ${body.commentId} is not found.`);
       }
-      let comment = rows[0].commentData;
-      if (comment.authorId !== accountId) {
+      let comment = rows[0];
+      if (comment.commentAuthorId !== accountId) {
         throw newUnauthorizedError(
           `Account ${accountId} is not allowed to delete comment ${body.commentId}.`,
         );
       }
-      await transaction.batchUpdate([deleteCommentStatement(body.commentId)]);
+      await transaction.batchUpdate([
+        deleteCommentStatement({ commentCommentIdEq: body.commentId }),
+      ]);
       await transaction.commit();
     });
     return {};

@@ -1,7 +1,6 @@
 import crypto = require("crypto");
 import { SERVICE_CLIENT } from "../../../common/service_client";
 import { SPANNER_DATABASE } from "../../../common/spanner_database";
-import { Comment } from "../../../db/schema";
 import { insertCommentStatement } from "../../../db/sql";
 import { Database } from "@google-cloud/spanner";
 import { PostCommentHandlerInterface } from "@phading/comment_service_interface/show/web/author/handler";
@@ -9,8 +8,9 @@ import {
   PostCommentRequestBody,
   PostCommentResponse,
 } from "@phading/comment_service_interface/show/web/author/interface";
+import { Comment } from "@phading/comment_service_interface/show/web/comment";
 import { MAX_CONTENT_LENGTH } from "@phading/constants/comment";
-import { newExchangeSessionAndCheckCapabilityRequest } from "@phading/user_session_service_interface/node/client";
+import { newFetchSessionAndCheckCapabilityRequest } from "@phading/user_session_service_interface/node/client";
 import { newBadRequestError, newUnauthorizedError } from "@selfage/http_error";
 import { NodeServiceClient } from "@selfage/node_service_client";
 
@@ -57,39 +57,41 @@ export class PostCommentHandler extends PostCommentHandlerInterface {
       throw newBadRequestError(`"pinTimeMs" must be non-negative.`);
     }
     let { accountId, capabilities } = await this.serviceClient.send(
-      newExchangeSessionAndCheckCapabilityRequest({
+      newFetchSessionAndCheckCapabilityRequest({
         signedSession: authStr,
         capabilitiesMask: {
-          checkCanConsumeShows: true,
+          checkCanConsume: true,
         },
       }),
     );
-    if (!capabilities.canConsumeShows) {
+    if (!capabilities.canConsume) {
       throw newUnauthorizedError(
         `Account ${accountId} is not allowed to post comment.`,
       );
     }
-    let commentInserted: Comment;
+    let commentToReturn: Comment;
     await this.database.runTransactionAsync(async (transaction) => {
-      commentInserted = {
+      commentToReturn = {
         commentId: this.generateUuid(),
-        seasonId: body.seasonId,
-        episodeId: body.episodeId,
         authorId: accountId,
         content: body.content,
         pinTimeMs: body.pinTimeMs,
-        postedTimeMs: this.getNow(),
       };
-      await transaction.batchUpdate([insertCommentStatement(commentInserted)]);
+      await transaction.batchUpdate([
+        insertCommentStatement({
+          commentId: commentToReturn.commentId,
+          seasonId: body.seasonId,
+          episodeId: body.episodeId,
+          authorId: commentToReturn.authorId,
+          content: commentToReturn.content,
+          pinTimeMs: commentToReturn.pinTimeMs,
+          postedTimeMs: this.getNow(),
+        }),
+      ]);
       await transaction.commit();
     });
     return {
-      comment: {
-        commentId: commentInserted.commentId,
-        authorId: commentInserted.authorId,
-        content: commentInserted.content,
-        pinTimeMs: commentInserted.pinTimeMs,
-      },
+      comment: commentToReturn,
     };
   }
 }

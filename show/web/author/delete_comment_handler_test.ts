@@ -6,7 +6,7 @@ import {
   insertCommentStatement,
 } from "../../../db/sql";
 import { DeleteCommentHandler } from "./delete_comment_handler";
-import { ExchangeSessionAndCheckCapabilityResponse } from "@phading/user_session_service_interface/node/interface";
+import { FetchSessionAndCheckCapabilityResponse } from "@phading/user_session_service_interface/node/interface";
 import { newNotFoundError, newUnauthorizedError } from "@selfage/http_error";
 import { eqHttpError } from "@selfage/http_error/test_matcher";
 import { NodeServiceClientMock } from "@selfage/node_service_client/client_mock";
@@ -37,9 +37,9 @@ TEST_RUNNER.run({
         serviceClientMock.response = {
           accountId: "account1",
           capabilities: {
-            canConsumeShows: true,
+            canConsume: true,
           },
-        } as ExchangeSessionAndCheckCapabilityResponse;
+        } as FetchSessionAndCheckCapabilityResponse;
         let handler = new DeleteCommentHandler(
           SPANNER_DATABASE,
           serviceClientMock,
@@ -50,14 +50,14 @@ TEST_RUNNER.run({
 
         // Verify
         assertThat(
-          await getComment(SPANNER_DATABASE, "comment1"),
+          await getComment(SPANNER_DATABASE, {commentCommentIdEq:"comment1"}),
           isArray([]),
           "Comment",
         );
       },
       async tearDown() {
         await SPANNER_DATABASE.runTransactionAsync(async (transaction) => {
-          await transaction.batchUpdate([deleteCommentStatement("comment1")]);
+          await transaction.batchUpdate([deleteCommentStatement({commentCommentIdEq:"comment1"})]);
           await transaction.commit();
         });
       },
@@ -70,9 +70,9 @@ TEST_RUNNER.run({
         serviceClientMock.response = {
           accountId: "account1",
           capabilities: {
-            canConsumeShows: true,
+            canConsume: true,
           },
-        } as ExchangeSessionAndCheckCapabilityResponse;
+        } as FetchSessionAndCheckCapabilityResponse;
         let handler = new DeleteCommentHandler(
           SPANNER_DATABASE,
           serviceClientMock,
@@ -113,9 +113,9 @@ TEST_RUNNER.run({
         serviceClientMock.response = {
           accountId: "account2",
           capabilities: {
-            canConsumeShows: true,
+            canConsume: true,
           },
-        } as ExchangeSessionAndCheckCapabilityResponse;
+        } as FetchSessionAndCheckCapabilityResponse;
         let handler = new DeleteCommentHandler(
           SPANNER_DATABASE,
           serviceClientMock,
@@ -139,7 +139,7 @@ TEST_RUNNER.run({
       },
       async tearDown() {
         await SPANNER_DATABASE.runTransactionAsync(async (transaction) => {
-          await transaction.batchUpdate([deleteCommentStatement("comment1")]);
+          await transaction.batchUpdate([deleteCommentStatement({commentCommentIdEq:"comment1"})]);
           await transaction.commit();
         });
       },

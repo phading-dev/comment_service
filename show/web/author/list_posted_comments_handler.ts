@@ -8,7 +8,7 @@ import {
   ListPostedCommentsResponse,
 } from "@phading/comment_service_interface/show/web/author/interface";
 import { PostedComment } from "@phading/comment_service_interface/show/web/author/posted_comment";
-import { newExchangeSessionAndCheckCapabilityRequest } from "@phading/user_session_service_interface/node/client";
+import { newFetchSessionAndCheckCapabilityRequest } from "@phading/user_session_service_interface/node/client";
 import { newBadRequestError, newUnauthorizedError } from "@selfage/http_error";
 import { NodeServiceClient } from "@selfage/node_service_client";
 
@@ -36,38 +36,37 @@ export class ListPostedCommentsHandler extends ListPostedCommentsHandlerInterfac
       throw newBadRequestError(`"limit" is required.`);
     }
     let { accountId, capabilities } = await this.serviceClient.send(
-      newExchangeSessionAndCheckCapabilityRequest({
+      newFetchSessionAndCheckCapabilityRequest({
         signedSession: authStr,
         capabilitiesMask: {
-          checkCanConsumeShows: true,
+          checkCanConsume: true,
         },
       }),
     );
-    if (!capabilities.canConsumeShows) {
+    if (!capabilities.canConsume) {
       throw newUnauthorizedError(
         `Account ${accountId} is not allowed to list posted comments.`,
       );
     }
-    let rows = await listCommentsByPostedTime(
-      this.database,
-      accountId,
-      body.postedTimeCursor ?? this.getNow(),
-      body.limit,
-    );
+    let rows = await listCommentsByPostedTime(this.database, {
+      commentAuthorIdEq: accountId,
+      commentPostedTimeMsLt: body.postedTimeCursor ?? this.getNow(),
+      limit: body.limit,
+    });
     return {
       comments: rows.map(
         (row): PostedComment => ({
-          commentId: row.commentData.commentId,
-          seasonId: row.commentData.seasonId,
-          episodeId: row.commentData.episodeId,
-          content: row.commentData.content,
-          pinTimeMs: row.commentData.pinTimeMs,
-          postedTimeMs: row.commentData.postedTimeMs,
+          commentId: row.commentCommentId,
+          seasonId: row.commentSeasonId,
+          episodeId: row.commentEpisodeId,
+          content: row.commentContent,
+          pinTimeMs: row.commentPinTimeMs,
+          postedTimeMs: row.commentPostedTimeMs,
         }),
       ),
       postedTimeCursor:
         rows.length === body.limit
-          ? rows[rows.length - 1].commentData.postedTimeMs
+          ? rows[rows.length - 1].commentPostedTimeMs
           : undefined,
     };
   }

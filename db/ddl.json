@@ -6,24 +6,24 @@
       "addColumnDdl": "ALTER TABLE Comment ADD COLUMN commentId STRING(MAX) NOT NULL"
     }, {
       "name": "seasonId",
-      "addColumnDdl": "ALTER TABLE Comment ADD COLUMN seasonId STRING(MAX) NOT NULL"
+      "addColumnDdl": "ALTER TABLE Comment ADD COLUMN seasonId STRING(MAX)"
     }, {
       "name": "episodeId",
-      "addColumnDdl": "ALTER TABLE Comment ADD COLUMN episodeId STRING(MAX) NOT NULL"
+      "addColumnDdl": "ALTER TABLE Comment ADD COLUMN episodeId STRING(MAX)"
     }, {
       "name": "authorId",
-      "addColumnDdl": "ALTER TABLE Comment ADD COLUMN authorId STRING(MAX) NOT NULL"
+      "addColumnDdl": "ALTER TABLE Comment ADD COLUMN authorId STRING(MAX)"
+    }, {
+      "name": "content",
+      "addColumnDdl": "ALTER TABLE Comment ADD COLUMN content STRING(MAX)"
     }, {
       "name": "pinTimeMs",
-      "addColumnDdl": "ALTER TABLE Comment ADD COLUMN pinTimeMs FLOAT64 NOT NULL"
+      "addColumnDdl": "ALTER TABLE Comment ADD COLUMN pinTimeMs FLOAT64"
     }, {
       "name": "postedTimeMs",
-      "addColumnDdl": "ALTER TABLE Comment ADD COLUMN postedTimeMs FLOAT64 NOT NULL"
-    }, {
-      "name": "data",
-      "addColumnDdl": "ALTER TABLE Comment ADD COLUMN data BYTES(MAX) NOT NULL"
+      "addColumnDdl": "ALTER TABLE Comment ADD COLUMN postedTimeMs FLOAT64"
     }],
-    "createTableDdl": "CREATE TABLE Comment (commentId STRING(MAX) NOT NULL, seasonId STRING(MAX) NOT NULL, episodeId STRING(MAX) NOT NULL, authorId STRING(MAX) NOT NULL, pinTimeMs FLOAT64 NOT NULL, postedTimeMs FLOAT64 NOT NULL, data BYTES(MAX) NOT NULL) PRIMARY KEY (commentId ASC)",
+    "createTableDdl": "CREATE TABLE Comment (commentId STRING(MAX) NOT NULL, seasonId STRING(MAX), episodeId STRING(MAX), authorId STRING(MAX), content STRING(MAX), pinTimeMs FLOAT64, postedTimeMs FLOAT64) PRIMARY KEY (commentId ASC)",
     "indexes": [{
       "name": "CommentsInEpisode",
       "createIndexDdl": "CREATE INDEX CommentsInEpisode ON Comment(seasonId, episodeId, pinTimeMs)"

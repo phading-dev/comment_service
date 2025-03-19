@@ -7,7 +7,7 @@ import {
 } from "../../../db/sql";
 import { PostCommentHandler } from "./post_comment_handler";
 import { POST_COMMENT_RESPONSE } from "@phading/comment_service_interface/show/web/author/interface";
-import { ExchangeSessionAndCheckCapabilityResponse } from "@phading/user_session_service_interface/node/interface";
+import { FetchSessionAndCheckCapabilityResponse } from "@phading/user_session_service_interface/node/interface";
 import { eqMessage } from "@selfage/message/test_matcher";
 import { NodeServiceClientMock } from "@selfage/node_service_client/client_mock";
 import { assertThat, isArray } from "@selfage/test_matcher";
@@ -24,9 +24,9 @@ TEST_RUNNER.run({
         serviceClientMock.response = {
           accountId: "account1",
           capabilities: {
-            canConsumeShows: true,
+            canConsume: true,
           },
-        } as ExchangeSessionAndCheckCapabilityResponse;
+        } as FetchSessionAndCheckCapabilityResponse;
         let handler = new PostCommentHandler(
           SPANNER_DATABASE,
           serviceClientMock,
@@ -63,19 +63,19 @@ TEST_RUNNER.run({
           "response",
         );
         assertThat(
-          await getComment(SPANNER_DATABASE, "comment1"),
+          await getComment(SPANNER_DATABASE, {
+            commentCommentIdEq: "comment1",
+          }),
           isArray([
             eqMessage(
               {
-                commentData: {
-                  commentId: "comment1",
-                  authorId: "account1",
-                  seasonId: "season1",
-                  episodeId: "episode1",
-                  content: "content1",
-                  postedTimeMs: 1000,
-                  pinTimeMs: 60,
-                },
+                commentCommentId: "comment1",
+                commentAuthorId: "account1",
+                commentSeasonId: "season1",
+                commentEpisodeId: "episode1",
+                commentContent: "content1",
+                commentPostedTimeMs: 1000,
+                commentPinTimeMs: 60,
               },
               GET_COMMENT_ROW,
             ),
@@ -85,7 +85,9 @@ TEST_RUNNER.run({
       },
       async tearDown() {
         await SPANNER_DATABASE.runTransactionAsync(async (transaction) => {
-          await transaction.batchUpdate([deleteCommentStatement("comment1")]);
+          await transaction.batchUpdate([
+            deleteCommentStatement({ commentCommentIdEq: "comment1" }),
+          ]);
           await transaction.commit();
         });
       },

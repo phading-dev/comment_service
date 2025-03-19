@@ -1,40 +1,29 @@
-- kind: Message
-  name: Comment
-  fields:
-    - name: commentId
-      type: string
-      index: 1
-    - name: seasonId
-      type: string
-      index: 2
-    - name: episodeId
-      type: string
-      index: 3
-    - name: authorId
-      type: string
-      index: 4
-    - name: content
-      type: string
-      index: 5
-    - name: pinTimeMs # Timestamp of the video
-      type: number
-      index: 6
-    - name: postedTimeMs
-      type: number
-      index: 7
 - kind: SpannerDatabase
   name: CommentDatabase
   tables:
-    - kind: MessageTable
+    - kind: Table
       name: Comment
-      storedInColumn: data
       columns:
-        - commentId
-        - seasonId
-        - episodeId
-        - authorId
-        - pinTimeMs
-        - postedTimeMs
+        - name: commentId
+          type: string
+        - name: seasonId
+          type: string
+          nullable: true
+        - name: episodeId
+          type: string
+          nullable: true
+        - name: authorId
+          type: string
+          nullable: true
+        - name: content
+          type: string
+          nullable: true
+        - name: pinTimeMs # Timestamp of the video
+          type: float64
+          nullable: true
+        - name: postedTimeMs
+          type: float64
+          nullable: true
       primaryKeys:
         - commentId
       indexes:
@@ -51,38 +40,37 @@
       insert: InsertComment
       delete: DeleteComment
       get: GetComment
-      update: UpdateComment
   selects:
     - name: ListCommentsInEpisode
-      table: Comment
+      from: Comment
       where:
         op: AND
-        exps:
+        exprs:
           - op: =
-            leftColumn: seasonId
+            lColumn: seasonId
           - op: =
-            leftColumn: episodeId
+            lColumn: episodeId
           - op: ">"
-            leftColumn: pinTimeMs
+            lColumn: pinTimeMs
       orderBy:
         - pinTimeMs
       withLimit: true
-      getColumns:
-        - data
+      get:
+        - all: true
     - name: ListCommentsByPostedTime
-      table: Comment
+      from: Comment
       where:
         op: AND
-        exps:
+        exprs:
           - op: =
-            leftColumn: authorId
+            lColumn: authorId
           - op: <
-            leftColumn: postedTimeMs
+            lColumn: postedTimeMs
       orderBy:
         - column: postedTimeMs
           desc: true
       withLimit: true
-      getColumns:
-        - data
+      get:
+        - all: true
   outputDdl: ./db/ddl
   outputSql: ./db/sql
