@@ -8,7 +8,10 @@ import { COMMENT_WEB_SERVICE } from "@phading/comment_service_interface/service"
 import { ServiceHandler } from "@selfage/service_handler/service_handler";
 
 async function main() {
-  let service = ServiceHandler.create(http.createServer())
+  let service = ServiceHandler.create(
+    http.createServer(),
+    ENV_VARS.externalOrigin,
+  )
     .addCorsAllowedPreflightHandler()
     .addHealthCheckHandler()
     .addMetricsHandler();
