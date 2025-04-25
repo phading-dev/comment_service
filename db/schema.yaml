@@ -18,7 +18,7 @@
         - name: content
           type: string
           nullable: true
-        - name: pinTimeMs # Timestamp of the video
+        - name: pinTimestampMs # Timestamp of the video
           type: float64
           nullable: true
         - name: postedTimeMs
@@ -31,7 +31,7 @@
           columns:
             - seasonId
             - episodeId
-            - pinTimeMs
+            - pinTimestampMs
         - name: CommentsByPostedTime
           columns:
             - authorId
@@ -51,9 +51,9 @@
           - op: =
             lColumn: episodeId
           - op: ">"
-            lColumn: pinTimeMs
+            lColumn: pinTimestampMs
       orderBy:
-        - pinTimeMs
+        - pinTimestampMs
       withLimit: true
       get:
         - all: true

@@ -54,7 +54,7 @@ export class ListCommentsHandler extends ListCommentsHandlerInterface {
     let rows = await listCommentsInEpisode(this.database, {
       commentSeasonIdEq: body.seasonId,
       commentEpisodeIdEq: body.episodeId,
-      commentPinTimeMsGt: body.pinTimeCursor ?? 0,
+      commentPinTimestampMsGt: body.pinTimestampCursor ?? 0,
       limit: body.limit,
     });
     return {
@@ -63,12 +63,12 @@ export class ListCommentsHandler extends ListCommentsHandlerInterface {
           commentId: row.commentCommentId,
           authorId: row.commentAuthorId,
           content: row.commentContent,
-          pinTimeMs: row.commentPinTimeMs,
+          pinTimestampMs: row.commentPinTimestampMs,
         }),
       ),
-      pinTimeCursor:
+      pinTimestampCursor:
         rows.length === body.limit
-          ? rows[rows.length - 1].commentPinTimeMs
+          ? rows[rows.length - 1].commentPinTimestampMs
           : undefined,
     };
   }

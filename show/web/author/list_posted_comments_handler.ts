@@ -60,7 +60,7 @@ export class ListPostedCommentsHandler extends ListPostedCommentsHandlerInterfac
           seasonId: row.commentSeasonId,
           episodeId: row.commentEpisodeId,
           content: row.commentContent,
-          pinTimeMs: row.commentPinTimeMs,
+          pinTimestampMs: row.commentPinTimestampMs,
           postedTimeMs: row.commentPostedTimeMs,
         }),
       ),

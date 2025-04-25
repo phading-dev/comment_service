@@ -50,11 +50,11 @@ export class PostCommentHandler extends PostCommentHandlerInterface {
     if (body.content.length > MAX_CONTENT_LENGTH) {
       throw newBadRequestError(`"content" is too long.`);
     }
-    if (!body.pinTimeMs) {
-      throw newBadRequestError(`"pinTimeMs" is required.`);
+    if (!body.pinTimestampMs) {
+      throw newBadRequestError(`"pinTimestampMs" is required.`);
     }
-    if (body.pinTimeMs < 0) {
-      throw newBadRequestError(`"pinTimeMs" must be non-negative.`);
+    if (body.pinTimestampMs < 0) {
+      throw newBadRequestError(`"pinTimestampMs" must be non-negative.`);
     }
     let { accountId, capabilities } = await this.serviceClient.send(
       newFetchSessionAndCheckCapabilityRequest({
@@ -75,7 +75,7 @@ export class PostCommentHandler extends PostCommentHandlerInterface {
         commentId: this.generateUuid(),
         authorId: accountId,
         content: body.content,
-        pinTimeMs: body.pinTimeMs,
+        pinTimestampMs: body.pinTimestampMs,
       };
       await transaction.batchUpdate([
         insertCommentStatement({
@@ -84,7 +84,7 @@ export class PostCommentHandler extends PostCommentHandlerInterface {
           episodeId: body.episodeId,
           authorId: commentToReturn.authorId,
           content: commentToReturn.content,
-          pinTimeMs: commentToReturn.pinTimeMs,
+          pinTimestampMs: commentToReturn.pinTimestampMs,
           postedTimeMs: this.getNow(),
         }),
       ]);
