@@ -1,6 +1,6 @@
 import { SERVICE_CLIENT } from "../../../common/service_client";
 import { SPANNER_DATABASE } from "../../../common/spanner_database";
-import { listCommentsInEpisode } from "../../../db/sql";
+import { listCommentsOfEpisode } from "../../../db/sql";
 import { Database } from "@google-cloud/spanner";
 import { Comment } from "@phading/comment_service_interface/show/web/comment";
 import { ListCommentsHandlerInterface } from "@phading/comment_service_interface/show/web/reader/handler";
@@ -35,8 +35,22 @@ export class ListCommentsHandler extends ListCommentsHandlerInterface {
     if (!body.episodeId) {
       throw newBadRequestError(`"episodeId" is required.`);
     }
-    if (!body.limit) {
-      throw newBadRequestError(`"limit" is required.`);
+    if (!body.pinnedTimeMsStart) {
+      throw newBadRequestError(`"pinnedTimeMsStart" is required.`);
+    }
+    if (body.pinnedTimeMsStart < 0) {
+      throw newBadRequestError(`"pinnedTimeMsStart" must be non-negative.`);
+    }
+    if (!body.pinnedTimeMsEnd) {
+      throw newBadRequestError(`"pinnedTimeMsEnd" is required.`);
+    }
+    if (body.pinnedTimeMsEnd < 0) {
+      throw newBadRequestError(`"pinnedTimeMsEnd" must be non-negative.`);
+    }
+    if (body.pinnedTimeMsStart >= body.pinnedTimeMsEnd) {
+      throw newBadRequestError(
+        `"pinnedTimeMsStart" must be smaller than "pinnedTimeMsEnd".`,
+      );
     }
     let { accountId, capabilities } = await this.serviceClient.send(
       newFetchSessionAndCheckCapabilityRequest({
@@ -51,11 +65,11 @@ export class ListCommentsHandler extends ListCommentsHandlerInterface {
         `Account ${accountId} is not allowed to list comments.`,
       );
     }
-    let rows = await listCommentsInEpisode(this.database, {
+    let rows = await listCommentsOfEpisode(this.database, {
       commentSeasonIdEq: body.seasonId,
       commentEpisodeIdEq: body.episodeId,
-      commentPinTimestampMsGt: body.pinTimestampCursor ?? 0,
-      limit: body.limit,
+      commentPinnedTimeMsGe: body.pinnedTimeMsStart,
+      commentPinnedTimeMsLt: body.pinnedTimeMsEnd,
     });
     return {
       comments: rows.map(
@@ -63,13 +77,9 @@ export class ListCommentsHandler extends ListCommentsHandlerInterface {
           commentId: row.commentCommentId,
           authorId: row.commentAuthorId,
           content: row.commentContent,
-          pinTimestampMs: row.commentPinTimestampMs,
+          pinnedTimeMs: row.commentPinnedTimeMs,
         }),
       ),
-      pinTimestampCursor:
-        rows.length === body.limit
-          ? rows[rows.length - 1].commentPinTimestampMs
-          : undefined,
     };
   }
 }

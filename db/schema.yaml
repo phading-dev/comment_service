@@ -18,7 +18,7 @@
         - name: content
           type: string
           nullable: true
-        - name: pinTimestampMs # Timestamp of the video
+        - name: pinnedTimeMs
           type: float64
           nullable: true
         - name: postedTimeMs
@@ -31,7 +31,7 @@
           columns:
             - seasonId
             - episodeId
-            - pinTimestampMs
+            - pinnedTimeMs
         - name: CommentsByPostedTime
           columns:
             - authorId
@@ -41,7 +41,7 @@
       delete: DeleteComment
       get: GetComment
   selects:
-    - name: ListCommentsInEpisode
+    - name: ListCommentsOfEpisode
       from: Comment
       where:
         op: AND
@@ -50,11 +50,12 @@
             lColumn: seasonId
           - op: =
             lColumn: episodeId
-          - op: ">"
-            lColumn: pinTimestampMs
+          - op: ">="
+            lColumn: pinnedTimeMs
+          - op: "<"
+            lColumn: pinnedTimeMs
       orderBy:
-        - pinTimestampMs
-      withLimit: true
+        - pinnedTimeMs
       get:
         - all: true
     - name: ListCommentsByPostedTime

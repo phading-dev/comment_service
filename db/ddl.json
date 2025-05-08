@@ -17,16 +17,16 @@
       "name": "content",
       "addColumnDdl": "ALTER TABLE Comment ADD COLUMN content STRING(MAX)"
     }, {
-      "name": "pinTimestampMs",
-      "addColumnDdl": "ALTER TABLE Comment ADD COLUMN pinTimestampMs FLOAT64"
+      "name": "pinnedTimeMs",
+      "addColumnDdl": "ALTER TABLE Comment ADD COLUMN pinnedTimeMs FLOAT64"
     }, {
       "name": "postedTimeMs",
       "addColumnDdl": "ALTER TABLE Comment ADD COLUMN postedTimeMs FLOAT64"
     }],
-    "createTableDdl": "CREATE TABLE Comment (commentId STRING(MAX) NOT NULL, seasonId STRING(MAX), episodeId STRING(MAX), authorId STRING(MAX), content STRING(MAX), pinTimestampMs FLOAT64, postedTimeMs FLOAT64) PRIMARY KEY (commentId ASC)",
+    "createTableDdl": "CREATE TABLE Comment (commentId STRING(MAX) NOT NULL, seasonId STRING(MAX), episodeId STRING(MAX), authorId STRING(MAX), content STRING(MAX), pinnedTimeMs FLOAT64, postedTimeMs FLOAT64) PRIMARY KEY (commentId ASC)",
     "indexes": [{
       "name": "CommentsInEpisode",
-      "createIndexDdl": "CREATE INDEX CommentsInEpisode ON Comment(seasonId, episodeId, pinTimestampMs)"
+      "createIndexDdl": "CREATE INDEX CommentsInEpisode ON Comment(seasonId, episodeId, pinnedTimeMs)"
     }, {
       "name": "CommentsByPostedTime",
       "createIndexDdl": "CREATE INDEX CommentsByPostedTime ON Comment(authorId, postedTimeMs DESC)"

@@ -16,7 +16,7 @@ TEST_RUNNER.run({
   name: "ListCommentsHandlerTest",
   cases: [
     {
-      name: "ListOneBatch_ListWithNoMore",
+      name: "ListARange",
       async execute() {
         // Prepare
         await SPANNER_DATABASE.runTransactionAsync(async (transaction) => {
@@ -28,7 +28,7 @@ TEST_RUNNER.run({
               episodeId: "episode1",
               content: "content1",
               postedTimeMs: 1000,
-              pinTimestampMs: 60,
+              pinnedTimeMs: 60,
             }),
             insertCommentStatement({
               commentId: "comment2",
@@ -37,7 +37,7 @@ TEST_RUNNER.run({
               episodeId: "episode1",
               content: "content2",
               postedTimeMs: 2000,
-              pinTimestampMs: 180,
+              pinnedTimeMs: 180,
             }),
             insertCommentStatement({
               commentId: "comment3",
@@ -46,7 +46,16 @@ TEST_RUNNER.run({
               episodeId: "episode1",
               content: "content3",
               postedTimeMs: 3000,
-              pinTimestampMs: 120,
+              pinnedTimeMs: 120,
+            }),
+            insertCommentStatement({
+              commentId: "comment4",
+              authorId: "account4",
+              seasonId: "season1",
+              episodeId: "episode1",
+              content: "content4",
+              postedTimeMs: 4000,
+              pinnedTimeMs: 240,
             }),
           ]);
           await transaction.commit();
@@ -70,7 +79,8 @@ TEST_RUNNER.run({
             {
               seasonId: "season1",
               episodeId: "episode1",
-              limit: 2,
+              pinnedTimeMsStart: 120,
+              pinnedTimeMsEnd: 240,
             },
             "auth",
           );
@@ -81,57 +91,23 @@ TEST_RUNNER.run({
             eqMessage(
               {
                 comments: [
-                  {
-                    commentId: "comment1",
-                    authorId: "account1",
-                    content: "content1",
-                    pinTimestampMs: 60,
-                  },
                   {
                     commentId: "comment3",
                     authorId: "account3",
                     content: "content3",
-                    pinTimestampMs: 120,
+                    pinnedTimeMs: 120,
                   },
-                ],
-                pinTimestampCursor: 120,
-              },
-              LIST_COMMENTS_RESPONSE,
-            ),
-            "response 1",
-          );
-        }
-
-        {
-          // Execute
-          let response = await handler.handle(
-            "",
-            {
-              seasonId: "season1",
-              episodeId: "episode1",
-              pinTimestampCursor: 120,
-              limit: 2,
-            },
-            "auth",
-          );
-
-          // Verify
-          assertThat(
-            response,
-            eqMessage(
-              {
-                comments: [
                   {
                     commentId: "comment2",
                     authorId: "account2",
                     content: "content2",
-                    pinTimestampMs: 180,
+                    pinnedTimeMs: 180,
                   },
                 ],
               },
               LIST_COMMENTS_RESPONSE,
             ),
-            "response 2",
+            "response 1",
           );
         }
       },
@@ -141,6 +117,7 @@ TEST_RUNNER.run({
             deleteCommentStatement({ commentCommentIdEq: "comment1" }),
             deleteCommentStatement({ commentCommentIdEq: "comment2" }),
             deleteCommentStatement({ commentCommentIdEq: "comment3" }),
+            deleteCommentStatement({ commentCommentIdEq: "comment4" }),
           ]);
           await transaction.commit();
         });

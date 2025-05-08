@@ -28,7 +28,7 @@ TEST_RUNNER.run({
               episodeId: "episode1",
               content: "content1",
               postedTimeMs: 1000,
-              pinTimestampMs: 60,
+              pinnedTimeMs: 60,
             }),
             insertCommentStatement({
               commentId: "comment3",
@@ -37,7 +37,7 @@ TEST_RUNNER.run({
               episodeId: "episode3",
               content: "content3",
               postedTimeMs: 3000,
-              pinTimestampMs: 120,
+              pinnedTimeMs: 120,
             }),
             insertCommentStatement({
               commentId: "comment2",
@@ -46,7 +46,7 @@ TEST_RUNNER.run({
               episodeId: "episode2",
               content: "content2",
               postedTimeMs: 2000,
-              pinTimestampMs: 180,
+              pinnedTimeMs: 180,
             }),
           ]);
           await transaction.commit();
@@ -86,7 +86,7 @@ TEST_RUNNER.run({
                     episodeId: "episode3",
                     content: "content3",
                     postedTimeMs: 3000,
-                    pinTimestampMs: 120,
+                    pinnedTimeMs: 120,
                   },
                   {
                     commentId: "comment2",
@@ -94,7 +94,7 @@ TEST_RUNNER.run({
                     episodeId: "episode2",
                     content: "content2",
                     postedTimeMs: 2000,
-                    pinTimestampMs: 180,
+                    pinnedTimeMs: 180,
                   },
                 ],
                 postedTimeCursor: 2000,
@@ -128,7 +128,7 @@ TEST_RUNNER.run({
                     episodeId: "episode1",
                     content: "content1",
                     postedTimeMs: 1000,
-                    pinTimestampMs: 60,
+                    pinnedTimeMs: 60,
                   },
                 ],
               },

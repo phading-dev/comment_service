@@ -9,19 +9,19 @@ export function insertCommentStatement(
     episodeId?: string,
     authorId?: string,
     content?: string,
-    pinTimestampMs?: number,
+    pinnedTimeMs?: number,
     postedTimeMs?: number,
   }
 ): Statement {
   return {
-    sql: "INSERT Comment (commentId, seasonId, episodeId, authorId, content, pinTimestampMs, postedTimeMs) VALUES (@commentId, @seasonId, @episodeId, @authorId, @content, @pinTimestampMs, @postedTimeMs)",
+    sql: "INSERT Comment (commentId, seasonId, episodeId, authorId, content, pinnedTimeMs, postedTimeMs) VALUES (@commentId, @seasonId, @episodeId, @authorId, @content, @pinnedTimeMs, @postedTimeMs)",
     params: {
       commentId: args.commentId,
       seasonId: args.seasonId == null ? null : args.seasonId,
       episodeId: args.episodeId == null ? null : args.episodeId,
       authorId: args.authorId == null ? null : args.authorId,
       content: args.content == null ? null : args.content,
-      pinTimestampMs: args.pinTimestampMs == null ? null : Spanner.float(args.pinTimestampMs),
+      pinnedTimeMs: args.pinnedTimeMs == null ? null : Spanner.float(args.pinnedTimeMs),
       postedTimeMs: args.postedTimeMs == null ? null : Spanner.float(args.postedTimeMs),
     },
     types: {
@@ -30,7 +30,7 @@ export function insertCommentStatement(
       episodeId: { type: "string" },
       authorId: { type: "string" },
       content: { type: "string" },
-      pinTimestampMs: { type: "float64" },
+      pinnedTimeMs: { type: "float64" },
       postedTimeMs: { type: "float64" },
     }
   };
@@ -58,7 +58,7 @@ export interface GetCommentRow {
   commentEpisodeId?: string,
   commentAuthorId?: string,
   commentContent?: string,
-  commentPinTimestampMs?: number,
+  commentPinnedTimeMs?: number,
   commentPostedTimeMs?: number,
 }
 
@@ -85,7 +85,7 @@ export let GET_COMMENT_ROW: MessageDescriptor<GetCommentRow> = {
     index: 5,
     primitiveType: PrimitiveType.STRING,
   }, {
-    name: 'commentPinTimestampMs',
+    name: 'commentPinnedTimeMs',
     index: 6,
     primitiveType: PrimitiveType.NUMBER,
   }, {
@@ -102,7 +102,7 @@ export async function getComment(
   }
 ): Promise<Array<GetCommentRow>> {
   let [rows] = await runner.run({
-    sql: "SELECT Comment.commentId, Comment.seasonId, Comment.episodeId, Comment.authorId, Comment.content, Comment.pinTimestampMs, Comment.postedTimeMs FROM Comment WHERE (Comment.commentId = @commentCommentIdEq)",
+    sql: "SELECT Comment.commentId, Comment.seasonId, Comment.episodeId, Comment.authorId, Comment.content, Comment.pinnedTimeMs, Comment.postedTimeMs FROM Comment WHERE (Comment.commentId = @commentCommentIdEq)",
     params: {
       commentCommentIdEq: args.commentCommentIdEq,
     },
@@ -118,25 +118,25 @@ export async function getComment(
       commentEpisodeId: row.at(2).value == null ? undefined : row.at(2).value,
       commentAuthorId: row.at(3).value == null ? undefined : row.at(3).value,
       commentContent: row.at(4).value == null ? undefined : row.at(4).value,
-      commentPinTimestampMs: row.at(5).value == null ? undefined : row.at(5).value.value,
+      commentPinnedTimeMs: row.at(5).value == null ? undefined : row.at(5).value.value,
       commentPostedTimeMs: row.at(6).value == null ? undefined : row.at(6).value.value,
     });
   }
   return resRows;
 }
 
-export interface ListCommentsInEpisodeRow {
+export interface ListCommentsOfEpisodeRow {
   commentCommentId?: string,
   commentSeasonId?: string,
   commentEpisodeId?: string,
   commentAuthorId?: string,
   commentContent?: string,
-  commentPinTimestampMs?: number,
+  commentPinnedTimeMs?: number,
   commentPostedTimeMs?: number,
 }
 
-export let LIST_COMMENTS_IN_EPISODE_ROW: MessageDescriptor<ListCommentsInEpisodeRow> = {
-  name: 'ListCommentsInEpisodeRow',
+export let LIST_COMMENTS_OF_EPISODE_ROW: MessageDescriptor<ListCommentsOfEpisodeRow> = {
+  name: 'ListCommentsOfEpisodeRow',
   fields: [{
     name: 'commentCommentId',
     index: 1,
@@ -158,7 +158,7 @@ export let LIST_COMMENTS_IN_EPISODE_ROW: MessageDescriptor<ListCommentsInEpisode
     index: 5,
     primitiveType: PrimitiveType.STRING,
   }, {
-    name: 'commentPinTimestampMs',
+    name: 'commentPinnedTimeMs',
     index: 6,
     primitiveType: PrimitiveType.NUMBER,
   }, {
@@ -168,31 +168,31 @@ export let LIST_COMMENTS_IN_EPISODE_ROW: MessageDescriptor<ListCommentsInEpisode
   }],
 };
 
-export async function listCommentsInEpisode(
+export async function listCommentsOfEpisode(
   runner: Database | Transaction,
   args: {
     commentSeasonIdEq?: string,
     commentEpisodeIdEq?: string,
-    commentPinTimestampMsGt?: number,
-    limit: number,
+    commentPinnedTimeMsGe?: number,
+    commentPinnedTimeMsLt?: number,
   }
-): Promise<Array<ListCommentsInEpisodeRow>> {
+): Promise<Array<ListCommentsOfEpisodeRow>> {
   let [rows] = await runner.run({
-    sql: "SELECT Comment.commentId, Comment.seasonId, Comment.episodeId, Comment.authorId, Comment.content, Comment.pinTimestampMs, Comment.postedTimeMs FROM Comment WHERE (Comment.seasonId = @commentSeasonIdEq AND Comment.episodeId = @commentEpisodeIdEq AND Comment.pinTimestampMs > @commentPinTimestampMsGt) ORDER BY Comment.pinTimestampMs LIMIT @limit",
+    sql: "SELECT Comment.commentId, Comment.seasonId, Comment.episodeId, Comment.authorId, Comment.content, Comment.pinnedTimeMs, Comment.postedTimeMs FROM Comment WHERE (Comment.seasonId = @commentSeasonIdEq AND Comment.episodeId = @commentEpisodeIdEq AND Comment.pinnedTimeMs >= @commentPinnedTimeMsGe AND Comment.pinnedTimeMs < @commentPinnedTimeMsLt) ORDER BY Comment.pinnedTimeMs",
     params: {
       commentSeasonIdEq: args.commentSeasonIdEq == null ? null : args.commentSeasonIdEq,
       commentEpisodeIdEq: args.commentEpisodeIdEq == null ? null : args.commentEpisodeIdEq,
-      commentPinTimestampMsGt: args.commentPinTimestampMsGt == null ? null : Spanner.float(args.commentPinTimestampMsGt),
-      limit: args.limit.toString(),
+      commentPinnedTimeMsGe: args.commentPinnedTimeMsGe == null ? null : Spanner.float(args.commentPinnedTimeMsGe),
+      commentPinnedTimeMsLt: args.commentPinnedTimeMsLt == null ? null : Spanner.float(args.commentPinnedTimeMsLt),
     },
     types: {
       commentSeasonIdEq: { type: "string" },
       commentEpisodeIdEq: { type: "string" },
-      commentPinTimestampMsGt: { type: "float64" },
-      limit: { type: "int64" },
+      commentPinnedTimeMsGe: { type: "float64" },
+      commentPinnedTimeMsLt: { type: "float64" },
     }
   });
-  let resRows = new Array<ListCommentsInEpisodeRow>();
+  let resRows = new Array<ListCommentsOfEpisodeRow>();
   for (let row of rows) {
     resRows.push({
       commentCommentId: row.at(0).value == null ? undefined : row.at(0).value,
@@ -200,7 +200,7 @@ export async function listCommentsInEpisode(
       commentEpisodeId: row.at(2).value == null ? undefined : row.at(2).value,
       commentAuthorId: row.at(3).value == null ? undefined : row.at(3).value,
       commentContent: row.at(4).value == null ? undefined : row.at(4).value,
-      commentPinTimestampMs: row.at(5).value == null ? undefined : row.at(5).value.value,
+      commentPinnedTimeMs: row.at(5).value == null ? undefined : row.at(5).value.value,
       commentPostedTimeMs: row.at(6).value == null ? undefined : row.at(6).value.value,
     });
   }
@@ -213,7 +213,7 @@ export interface ListCommentsByPostedTimeRow {
   commentEpisodeId?: string,
   commentAuthorId?: string,
   commentContent?: string,
-  commentPinTimestampMs?: number,
+  commentPinnedTimeMs?: number,
   commentPostedTimeMs?: number,
 }
 
@@ -240,7 +240,7 @@ export let LIST_COMMENTS_BY_POSTED_TIME_ROW: MessageDescriptor<ListCommentsByPos
     index: 5,
     primitiveType: PrimitiveType.STRING,
   }, {
-    name: 'commentPinTimestampMs',
+    name: 'commentPinnedTimeMs',
     index: 6,
     primitiveType: PrimitiveType.NUMBER,
   }, {
@@ -259,7 +259,7 @@ export async function listCommentsByPostedTime(
   }
 ): Promise<Array<ListCommentsByPostedTimeRow>> {
   let [rows] = await runner.run({
-    sql: "SELECT Comment.commentId, Comment.seasonId, Comment.episodeId, Comment.authorId, Comment.content, Comment.pinTimestampMs, Comment.postedTimeMs FROM Comment WHERE (Comment.authorId = @commentAuthorIdEq AND Comment.postedTimeMs < @commentPostedTimeMsLt) ORDER BY Comment.postedTimeMs DESC LIMIT @limit",
+    sql: "SELECT Comment.commentId, Comment.seasonId, Comment.episodeId, Comment.authorId, Comment.content, Comment.pinnedTimeMs, Comment.postedTimeMs FROM Comment WHERE (Comment.authorId = @commentAuthorIdEq AND Comment.postedTimeMs < @commentPostedTimeMsLt) ORDER BY Comment.postedTimeMs DESC LIMIT @limit",
     params: {
       commentAuthorIdEq: args.commentAuthorIdEq == null ? null : args.commentAuthorIdEq,
       commentPostedTimeMsLt: args.commentPostedTimeMsLt == null ? null : Spanner.float(args.commentPostedTimeMsLt),
@@ -279,7 +279,7 @@ export async function listCommentsByPostedTime(
       commentEpisodeId: row.at(2).value == null ? undefined : row.at(2).value,
       commentAuthorId: row.at(3).value == null ? undefined : row.at(3).value,
       commentContent: row.at(4).value == null ? undefined : row.at(4).value,
-      commentPinTimestampMs: row.at(5).value == null ? undefined : row.at(5).value.value,
+      commentPinnedTimeMs: row.at(5).value == null ? undefined : row.at(5).value.value,
       commentPostedTimeMs: row.at(6).value == null ? undefined : row.at(6).value.value,
     });
   }
