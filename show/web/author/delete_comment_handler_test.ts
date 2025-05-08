@@ -28,7 +28,7 @@ TEST_RUNNER.run({
               seasonId: "season1",
               episodeId: "episode1",
               postedTimeMs: 1000,
-              pinnedTimeMs: 2000,
+              pinnedVideoTimeMs: 2000,
             }),
           ]);
           await transaction.commit();
@@ -104,7 +104,7 @@ TEST_RUNNER.run({
               seasonId: "season1",
               episodeId: "episode1",
               postedTimeMs: 1000,
-              pinnedTimeMs: 2000,
+              pinnedVideoTimeMs: 2000,
             }),
           ]);
           await transaction.commit();

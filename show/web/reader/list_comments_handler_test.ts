@@ -28,7 +28,7 @@ TEST_RUNNER.run({
               episodeId: "episode1",
               content: "content1",
               postedTimeMs: 1000,
-              pinnedTimeMs: 60,
+              pinnedVideoTimeMs: 60,
             }),
             insertCommentStatement({
               commentId: "comment2",
@@ -37,7 +37,7 @@ TEST_RUNNER.run({
               episodeId: "episode1",
               content: "content2",
               postedTimeMs: 2000,
-              pinnedTimeMs: 180,
+              pinnedVideoTimeMs: 180,
             }),
             insertCommentStatement({
               commentId: "comment3",
@@ -46,7 +46,7 @@ TEST_RUNNER.run({
               episodeId: "episode1",
               content: "content3",
               postedTimeMs: 3000,
-              pinnedTimeMs: 120,
+              pinnedVideoTimeMs: 120,
             }),
             insertCommentStatement({
               commentId: "comment4",
@@ -55,7 +55,7 @@ TEST_RUNNER.run({
               episodeId: "episode1",
               content: "content4",
               postedTimeMs: 4000,
-              pinnedTimeMs: 240,
+              pinnedVideoTimeMs: 240,
             }),
           ]);
           await transaction.commit();
@@ -79,8 +79,8 @@ TEST_RUNNER.run({
             {
               seasonId: "season1",
               episodeId: "episode1",
-              pinnedTimeMsStart: 120,
-              pinnedTimeMsEnd: 240,
+              pinnedVideoTimeMsStart: 120,
+              pinnedVideoTimeMsEnd: 240,
             },
             "auth",
           );
@@ -95,13 +95,13 @@ TEST_RUNNER.run({
                     commentId: "comment3",
                     authorId: "account3",
                     content: "content3",
-                    pinnedTimeMs: 120,
+                    pinnedVideoTimeMs: 120,
                   },
                   {
                     commentId: "comment2",
                     authorId: "account2",
                     content: "content2",
-                    pinnedTimeMs: 180,
+                    pinnedVideoTimeMs: 180,
                   },
                 ],
               },

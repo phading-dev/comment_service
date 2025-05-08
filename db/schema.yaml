@@ -18,7 +18,7 @@
         - name: content
           type: string
           nullable: true
-        - name: pinnedTimeMs
+        - name: pinnedVideoTimeMs
           type: float64
           nullable: true
         - name: postedTimeMs
@@ -31,7 +31,7 @@
           columns:
             - seasonId
             - episodeId
-            - pinnedTimeMs
+            - pinnedVideoTimeMs
         - name: CommentsByPostedTime
           columns:
             - authorId
@@ -51,11 +51,11 @@
           - op: =
             lColumn: episodeId
           - op: ">="
-            lColumn: pinnedTimeMs
+            lColumn: pinnedVideoTimeMs
           - op: "<"
-            lColumn: pinnedTimeMs
+            lColumn: pinnedVideoTimeMs
       orderBy:
-        - pinnedTimeMs
+        - pinnedVideoTimeMs
       get:
         - all: true
     - name: ListCommentsByPostedTime

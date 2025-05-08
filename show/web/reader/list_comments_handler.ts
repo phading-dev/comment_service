@@ -35,21 +35,21 @@ export class ListCommentsHandler extends ListCommentsHandlerInterface {
     if (!body.episodeId) {
       throw newBadRequestError(`"episodeId" is required.`);
     }
-    if (!body.pinnedTimeMsStart) {
-      throw newBadRequestError(`"pinnedTimeMsStart" is required.`);
+    if (!body.pinnedVideoTimeMsStart) {
+      throw newBadRequestError(`"pinnedVideoTimeMsStart" is required.`);
     }
-    if (body.pinnedTimeMsStart < 0) {
-      throw newBadRequestError(`"pinnedTimeMsStart" must be non-negative.`);
+    if (body.pinnedVideoTimeMsStart < 0) {
+      throw newBadRequestError(`"pinnedVideoTimeMsStart" must be non-negative.`);
     }
-    if (!body.pinnedTimeMsEnd) {
-      throw newBadRequestError(`"pinnedTimeMsEnd" is required.`);
+    if (!body.pinnedVideoTimeMsEnd) {
+      throw newBadRequestError(`"pinnedVideoTimeMsEnd" is required.`);
     }
-    if (body.pinnedTimeMsEnd < 0) {
-      throw newBadRequestError(`"pinnedTimeMsEnd" must be non-negative.`);
+    if (body.pinnedVideoTimeMsEnd < 0) {
+      throw newBadRequestError(`"pinnedVideoTimeMsEnd" must be non-negative.`);
     }
-    if (body.pinnedTimeMsStart >= body.pinnedTimeMsEnd) {
+    if (body.pinnedVideoTimeMsStart >= body.pinnedVideoTimeMsEnd) {
       throw newBadRequestError(
-        `"pinnedTimeMsStart" must be smaller than "pinnedTimeMsEnd".`,
+        `"pinnedVideoTimeMsStart" must be smaller than "pinnedVideoTimeMsEnd".`,
       );
     }
     let { accountId, capabilities } = await this.serviceClient.send(
@@ -68,8 +68,8 @@ export class ListCommentsHandler extends ListCommentsHandlerInterface {
     let rows = await listCommentsOfEpisode(this.database, {
       commentSeasonIdEq: body.seasonId,
       commentEpisodeIdEq: body.episodeId,
-      commentPinnedTimeMsGe: body.pinnedTimeMsStart,
-      commentPinnedTimeMsLt: body.pinnedTimeMsEnd,
+      commentPinnedVideoTimeMsGe: body.pinnedVideoTimeMsStart,
+      commentPinnedVideoTimeMsLt: body.pinnedVideoTimeMsEnd,
     });
     return {
       comments: rows.map(
@@ -77,7 +77,7 @@ export class ListCommentsHandler extends ListCommentsHandlerInterface {
           commentId: row.commentCommentId,
           authorId: row.commentAuthorId,
           content: row.commentContent,
-          pinnedTimeMs: row.commentPinnedTimeMs,
+          pinnedVideoTimeMs: row.commentPinnedVideoTimeMs,
         }),
       ),
     };
