@@ -14,6 +14,7 @@ async function main() {
   )
     .addCorsAllowedPreflightHandler()
     .addHealthCheckHandler()
+    .addReadinessHandler()
     .addMetricsHandler();
   service
     .addHandlerRegister(COMMENT_WEB_SERVICE)
