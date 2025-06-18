@@ -44,7 +44,7 @@ export class PostCommentHandler extends PostCommentHandlerInterface {
     if (!body.episodeId) {
       throw newBadRequestError(`"episodeId" is required.`);
     }
-    if (!body.content || body.content.length === 0) {
+    if (!body.content) {
       throw newBadRequestError(`"content" is required.`);
     }
     if (body.content.length > MAX_CONTENT_LENGTH) {
