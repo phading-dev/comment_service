@@ -35,13 +35,13 @@ export class ListCommentsHandler extends ListCommentsHandlerInterface {
     if (!body.episodeId) {
       throw newBadRequestError(`"episodeId" is required.`);
     }
-    if (!body.pinnedVideoTimeMsStart) {
+    if (body.pinnedVideoTimeMsStart == null) {
       throw newBadRequestError(`"pinnedVideoTimeMsStart" is required.`);
     }
     if (body.pinnedVideoTimeMsStart < 0) {
       throw newBadRequestError(`"pinnedVideoTimeMsStart" must be non-negative.`);
     }
-    if (!body.pinnedVideoTimeMsEnd) {
+    if (body.pinnedVideoTimeMsEnd == null) {
       throw newBadRequestError(`"pinnedVideoTimeMsEnd" is required.`);
     }
     if (body.pinnedVideoTimeMsEnd < 0) {

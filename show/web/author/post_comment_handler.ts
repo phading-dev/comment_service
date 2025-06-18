@@ -50,7 +50,7 @@ export class PostCommentHandler extends PostCommentHandlerInterface {
     if (body.content.length > MAX_CONTENT_LENGTH) {
       throw newBadRequestError(`"content" is too long.`);
     }
-    if (!body.pinnedVideoTimeMs) {
+    if (body.pinnedVideoTimeMs == null) {
       throw newBadRequestError(`"pinnedVideoTimeMs" is required.`);
     }
     if (body.pinnedVideoTimeMs < 0) {
