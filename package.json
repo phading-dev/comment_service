@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@google-cloud/spanner": "^7.21.0",
-    "@phading/cluster": "^1.0.7",
+    "@phading/cluster": "^1.0.8",
     "@phading/comment_service_interface": "^1.0.5",
     "@phading/constants": "^0.3.12",
     "@phading/user_session_service_interface": "^1.1.1",
