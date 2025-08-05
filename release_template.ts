@@ -1,5 +1,5 @@
 import { ENV_VARS } from "./env_vars";
-import { COMMENT_WEB_SERVICE } from "@phading/comment_service_interface/service";
+import { K8S_SERVICE_NAME, K8S_SERVICE_PORT } from "@phading/comment_service_interface/service_const";
 import { writeFileSync } from "fs";
 
 export function generate(env: string) {
@@ -128,13 +128,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ${ENV_VARS.releaseServiceName}
+  name: ${K8S_SERVICE_NAME}
 spec:
   selector:
     app: ${ENV_VARS.releaseServiceName}-pod
   ports:
     - protocol: TCP
-      port: ${ENV_VARS.port}
+      port: ${K8S_SERVICE_PORT}
       targetPort: ${ENV_VARS.port}
   type: ClusterIP
 ---
@@ -153,25 +153,6 @@ spec:
     group: ""
     kind: Service
     name: ${ENV_VARS.releaseServiceName}
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: ${ENV_VARS.releaseServiceName}-route-external
-spec:
-  parentRefs:
-  - name: ${ENV_VARS.externalGatewayName}
-    sectionName: https
-  hostnames:
-  - ${ENV_VARS.externalDomain}
-  rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: ${COMMENT_WEB_SERVICE.path}
-    backendRefs:
-    - name: ${ENV_VARS.releaseServiceName}
-      port: ${ENV_VARS.port}
 `;
   writeFileSync(`${env}/service.yaml`, serviceTemplate);
 
